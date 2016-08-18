@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+							http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+							http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+							http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd"
+							default-lazy-init ="true">
+    <!-- Uncomment and add your base-package here:
+         <context:component-scan
+            base-package="org.springframework.samples.service"/>  -->
+            
+         <context:property-placeholder location="classpath:/db.properties" />   
+<!-- dataSource -->
+		<bean id="dataSource-school" class="com.qingshu.TD.utils.DynamicDataSource" destroy-method="close">
+			<property name="driverClassName" value="${jdbc1.driver}" />
+			<property name="url" value="${jdbc1.url}" />
+			<property name="username" value="${jdbc1.username}" />
+			<property name="password" value="${jdbc1.password}" />
+			<property name="maxActive" value="10" /> 
+			<property name="maxWait" value="2880000"/> 
+		</bean>
+		
+		<bean id="dataSource-global" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+			<property name="driverClassName" value="${jdbc2.driver}" />
+			<property name="url" value="${jdbc2.url}" />
+			<property name="username" value="${jdbc2.username}" />
+			<property name="password" value="${jdbc2.password}" />
+			<property name="maxActive" value="10" /> 
+			<property name="maxWait" value="2880000"/> 
+		</bean>
+		
+		<!-- sqlSessinFactory -->
+		<bean id="sqlSessionFactory-school" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<property name="configLocation" value="classpath:/mybatis/mybatis-config.xml"/>
+			<property name="dataSource" ref="dataSource-school" />
+		</bean>
+		<bean id="sqlSessionFactory-global" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<property name="configLocation" value="classpath:/mybatis/mybatis-config.xml"/>
+			<property name="dataSource" ref="dataSource-global" />
+		</bean>
+		
+		<!--service -->
+		<bean id="tDservice" class="com.qingshu.TD.service.TDService"></bean>
+		
+		<!-- 事务管理 -->
+		<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+       	 	<property name="dataSource" ref="dataSource-school" />  
+    	</bean> 
+    	
+		<tx:advice id="txAdvice" transaction-manager="transactionManager">
+	        <tx:attributes>
+	            <tx:method name="*"  />
+	        </tx:attributes>
+	    </tx:advice>
+	    
+	     <aop:config>
+	        <aop:pointcut id="interceptorPointCuts" expression="execution(* com.qingshu.TD.service.*.*(..))" />
+	        <aop:advisor advice-ref="txAdvice" pointcut-ref="interceptorPointCuts" />
+		 </aop:config>
+		
+		<!-- dao 使用组件扫描-->
+		<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+			<property name="basePackage" value="com.qingshu.TD.mapper"></property>
+			<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory-global" />
+		</bean>
+		<!-- dao -->
+	
+	    <bean id="teachingplanDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+	        <property name="mapperInterface" value="com.qingshu.TD.mapper.TeachingplanCourseMapper"></property>
+	        <property name="sqlSessionFactory" ref="sqlSessionFactory-school"></property>
+	    </bean>
+			
+</beans>
