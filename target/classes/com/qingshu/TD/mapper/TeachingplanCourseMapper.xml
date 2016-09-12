@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qingshu.TD.mapper.TeachingplanCourseMapper">
+
+	<resultMap type="TeachingplanCourseEbook" id="tdbBean">
+		<result column="major" property="major"/>
+		<result column="level" property="level"/>
+		<result column="course" property="course"/>
+		<result column="term" property="term"/>
+		<result column="enroll_year" property="enroll_year"/>
+		<result column="res_course" property="res_course"/>
+		<result column="res_courseware" property="res_courseware"/>
+		<result column="url" property="url"/>
+		<result column="courseware_status" property="courseware_status"/>
+		
+		<!-- 一对多的关系 -->
+		<!-- property: 指的是集合属性的值, ofType：指的是集合中元素的类型 
+		<collection property="ebookId" javaType="List" column="course_id" ofType="String" select="selectEbookId"/>
+		-->
+		<collection property="ebookId" column="ebookId" ofType="java.lang.String">
+         <result column="ebookId"/>
+      </collection>
+	</resultMap>
+
+	<select id="selectTeachingplanCourseEbook" resultMap="tdbBean">
+		select m.name major,m.level level,replace(c.name,concat('(',m.level,')'),'') course,tc.term term,
+			s.year enroll_year,c.global_id res_course ,c.global_courseware_id res_courseware,c.base_url url,
+			c.id course_id ,ce.global_book_id ebookId,c.courseware_status
+		from teachingplan_course tc 
+		join teachingplan t 
+		on tc.teachingplan_id=t.id 
+		join major m 
+		on t.major_id =m.id 
+		join course c 
+		on c.id =tc.course_id 
+		join semester s 
+		on t.semester_id=s.id 
+		left join course_ebook ce 
+		on c.id=ce.course_id
+	    order by enroll_year,major,level,term,course
+	</select>
+	
+	<select id="selectEbookId" parameterType="String" resultType="String">
+		select global_book_id from course_ebook where course_id=${value}
+	</select>
+	
+	<select id="selectStudentCount" resultType="StudentCount">
+		select se.year year,count(1) count from student s 
+		join semester se 
+		on s.semester_id=se.id
+		and s.study_status_id=0
+		group by s.semester_id
+	</select>
+	
+
+</mapper>

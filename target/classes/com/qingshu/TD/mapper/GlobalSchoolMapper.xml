@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qingshu.TD.mapper.GlobalSchoolMapper">
+	<select id="selectSchoolId" parameterType="String" resultType="String">
+		select id from school where symbol=#{value}
+	</select>
+	
+	<select id="selectAllSchoolSymbol" resultType="String">
+		select concat(symbol,'  ',name)symbol from school where category_id=1
+	</select>
+	
+	<select id="selectAllSchoolSymbol1" resultType="String">
+	select concat("&lt;table&gt;&lt;tr&gt;&lt;td width='100'&gt;",symbol,"&lt;/td&gt;&lt;td width='300'&gt;",name,'&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;')symbol from school where category_id=1
+	</select>
+	
+	<select id="selectSchoolUrl" parameterType="String" resultType="String">
+		SELECT url FROM npdb.school_db_setting where school_id=#{value}
+	</select>
+	
+	<select id="selectAllEbook"  resultType="Ebook">
+		SELECT * from res_book;
+	</select>
+	
+	
+</mapper>
+
